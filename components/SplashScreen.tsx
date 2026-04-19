@@ -27,13 +27,11 @@ export default function SplashScreen() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 0,
           }}
         >
-          {/* Logo */}
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.75, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             style={{
               fontFamily: 'Cairo, sans-serif',
@@ -47,10 +45,9 @@ export default function SplashScreen() {
             زيّ
           </motion.div>
 
-          {/* Tagline */}
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.5 }}
             style={{
               fontFamily: 'Cairo, sans-serif',
@@ -59,19 +56,18 @@ export default function SplashScreen() {
               color: 'rgba(255,255,255,0.3)',
               letterSpacing: '0.35em',
               textTransform: 'uppercase',
-              marginTop: 12,
+              marginTop: 14,
             }}
           >
             أناقة كلاسيكية
           </motion.p>
 
-          {/* Loading bar */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
             style={{
-              marginTop: 40,
+              marginTop: 44,
               width: 48,
               height: 2,
               background: 'rgba(255,255,255,0.08)',

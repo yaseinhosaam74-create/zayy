@@ -35,32 +35,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `
               (function() {
                 try {
-                  // Restore theme and language from storage
                   var stored = JSON.parse(localStorage.getItem('my-store-data') || '{}');
                   var state = stored?.state || {};
                   var theme = state.theme;
                   var lang = state.language;
-
-                  // If no language saved, detect from phone
                   if (!lang) {
                     var phoneLang = navigator.language || navigator.languages?.[0] || 'ar';
                     lang = phoneLang.startsWith('ar') ? 'ar' : 'en';
-                    // Save detected language
                     if (!stored.state) stored.state = {};
                     stored.state.language = lang;
                     localStorage.setItem('my-store-data', JSON.stringify(stored));
                   }
-
-                  if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                  }
+                  if (theme === 'dark') document.documentElement.classList.add('dark');
                   if (lang === 'en') {
                     document.documentElement.setAttribute('dir', 'ltr');
                     document.documentElement.setAttribute('lang', 'en');
                   }
                 } catch(e) {}
-
-                // Content protection
                 document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
                 document.addEventListener('keydown', function(e) {
                   if (e.ctrlKey && ['u','s','a'].includes(e.key.toLowerCase())) e.preventDefault();

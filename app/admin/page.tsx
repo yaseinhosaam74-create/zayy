@@ -453,27 +453,83 @@ export default function AdminPage() {
 
         {/* ══ SETTINGS ══ */}
         {section === 'settings' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 style={{ color: '#fff', fontSize: 18, fontWeight: 900, marginBottom: 4 }}>إعدادات الموقع الكاملة</h2>
-
-            {/* Brand */}
-            <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>🏷️ هوية العلامة التجارية</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                {[
-                  { key: 'name', label: 'اسم الموقع بالعربية' },
-                  { key: 'nameEn', label: 'اسم الموقع بالإنجليزية' },
-                  { key: 'taglineAr', label: 'الشعار بالعربية' },
-                  { key: 'taglineEn', label: 'الشعار بالإنجليزية' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
-                    <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
-                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
-                  </div>
-                ))}
-              </div>
+          {/* Privacy Page */}
+<div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
+  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>
+    🔒 صفحة سياسة الخصوصية
+  </p>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    {[
+      { key: 'privacyTitleAr', label: 'عنوان الصفحة بالعربية' },
+      { key: 'privacyTitleEn', label: 'عنوان الصفحة بالإنجليزية' },
+    ].map(f => (
+      <div key={f.key}>
+        <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
+        <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+          style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
+      </div>
+    ))}
+    {[1,2,3,4,5,6].map(n => (
+      <div key={n} style={{ background: '#111', borderRadius: 10, padding: 14 }}>
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 10, fontFamily: 'Cairo' }}>القسم {n}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            { key: `privacyS${n}TitleAr`, label: 'عنوان القسم بالعربية' },
+            { key: `privacyS${n}TitleEn`, label: 'عنوان القسم بالإنجليزية' },
+            { key: `privacyS${n}TextAr`, label: 'نص القسم بالعربية' },
+            { key: `privacyS${n}TextEn`, label: 'نص القسم بالإنجليزية' },
+          ].map(f => (
+            <div key={f.key}>
+              <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 4 }}>{f.label}</label>
+              <textarea value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+                rows={2}
+                style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 12, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
             </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+{/* Terms Page */}
+<div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
+  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>
+    📋 صفحة الشروط والأحكام
+  </p>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    {[
+      { key: 'termsTitleAr', label: 'عنوان الصفحة بالعربية' },
+      { key: 'termsTitleEn', label: 'عنوان الصفحة بالإنجليزية' },
+    ].map(f => (
+      <div key={f.key}>
+        <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
+        <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+          style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
+      </div>
+    ))}
+    {[1,2,3,4,5,6].map(n => (
+      <div key={n} style={{ background: '#111', borderRadius: 10, padding: 14 }}>
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 10, fontFamily: 'Cairo' }}>القسم {n}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            { key: `termsS${n}TitleAr`, label: 'عنوان القسم بالعربية' },
+            { key: `termsS${n}TitleEn`, label: 'عنوان القسم بالإنجليزية' },
+            { key: `termsS${n}TextAr`, label: 'نص القسم بالعربية' },
+            { key: `termsS${n}TextEn`, label: 'نص القسم بالإنجليزية' },
+          ].map(f => (
+            <div key={f.key}>
+              <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 4 }}>{f.label}</label>
+              <textarea value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+                rows={2}
+                style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 12, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
             {/* Hero */}
             <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
