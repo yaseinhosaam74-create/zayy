@@ -1,71 +1,72 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Drawer from '@/components/Drawer';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
-import { getFeaturedProducts, getOffers } from '@/lib/firebase-store';
+import { getFeaturedProducts, type Product } from '@/lib/firebase-store';
 import { useStore } from '@/store/useStore';
 import { motion } from 'framer-motion';
 
 export default function OffersPage() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawer, setDrawer] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const { language } = useStore();
   const isRTL = language === 'ar';
-  const products = getFeaturedProducts();
-  const offers = getOffers();
+
+  useEffect(() => {
+    getFeaturedProducts().then(data => {
+      setProducts(data);
+      setLoading(false);
+    });
+  }, []);
 
   return (
-    <div className="min-h-screen bg-paper">
-      <Header onMenuOpen={() => setDrawerOpen(true)} />
-      <Drawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
+    <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
+      <Header onMenuOpen={() => setDrawer(true)} />
+      <Drawer isOpen={drawer} onClose={() => setDrawer(false)} />
 
-      {/* Page Header */}
-      <section className="bg-ink text-paper pt-32 pb-16 px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-paper/40 text-xs tracking-widest uppercase mb-3"
-          >
+      <section style={{
+        paddingTop: 54,
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+      }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 20px 28px' }}>
+          <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Cairo' }}>
             {isRTL ? 'تخفيضات حصرية' : 'Exclusive Deals'}
           </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="font-cairo font-bold text-5xl"
-          >
+          <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            style={{ fontFamily: 'Cairo', fontWeight: 900, fontSize: 40, color: '#fff', marginBottom: 6 }}>
             {isRTL ? 'العروض' : 'OFFERS'}
           </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-paper/40 text-sm mt-3"
-          >
-            {isRTL
-              ? `العروض سارية حتى ${offers.expires}`
-              : `Offers valid until ${offers.expires}`}
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontFamily: 'Cairo' }}>
+            {loading ? '...' : `${products.length} ${isRTL ? 'منتج' : 'products'}`}
           </motion.p>
         </div>
       </section>
 
-      {/* Products Grid */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <p className="text-xs text-ink/40 mb-8">
-          {products.length} {isRTL ? 'منتج مميز' : 'featured products'}
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.map((product, index) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              index={index}
-            />
-          ))}
-        </div>
+      <section style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 16px 60px' }}>
+        {loading ? (
+          <div className="product-grid">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} style={{ background: 'var(--paper-soft)', borderRadius: 8, aspectRatio: '3/4' }} />
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 0', gap: 16 }}>
+            <i className="fa-solid fa-tag" style={{ fontSize: 48, color: 'var(--border)' }} />
+            <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)', fontFamily: 'Cairo' }}>
+              {isRTL ? 'لا توجد عروض حالياً' : 'No offers available right now'}
+            </p>
+          </div>
+        ) : (
+          <div className="product-grid">
+            {products.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+          </div>
+        )}
       </section>
 
       <Footer />

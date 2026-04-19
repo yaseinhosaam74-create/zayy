@@ -2,12 +2,12 @@
   "name": "my-store",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-"build": "next build --no-turbo"
-    "start": "next start",
-    "lint": "eslint"
-  },
+"scripts": {
+  "dev": "next dev --webpack",
+  "build": "next build --webpack",
+  "start": "next start",
+  "lint": "next lint"
+},
   "dependencies": {
     "@headlessui/react": "^2.2.10",
     "@next/font": "^14.2.15",
