@@ -18,6 +18,7 @@ import { db, auth } from '@/firebase/config';
 // ══════════════════════════════════════════
 const ADMIN_EMAILS = [
   'yaseinhosaam74@gmail.com',
+  'yaseinhosaam.1@gmail.com'
 ];
 const MAX_SESSIONS = 2;
 const CLOUDINARY_CLOUD_NAME = 'ddbjootzx';
