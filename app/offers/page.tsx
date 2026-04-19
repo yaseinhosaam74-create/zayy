@@ -33,16 +33,37 @@ export default function OffersPage() {
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
       }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 20px 28px' }}>
-          <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Cairo' }}>
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              fontSize: 11, fontWeight: 700,
+              color: 'rgba(255,255,255,0.35)',
+              letterSpacing: '0.3em',
+              textTransform: 'uppercase',
+              marginBottom: 8,
+              fontFamily: 'Cairo',
+            }}
+          >
             {isRTL ? 'تخفيضات حصرية' : 'Exclusive Deals'}
           </motion.p>
-          <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            style={{ fontFamily: 'Cairo', fontWeight: 900, fontSize: 40, color: '#fff', marginBottom: 6 }}>
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            style={{
+              fontFamily: 'Cairo', fontWeight: 900,
+              fontSize: 40, color: '#fff', marginBottom: 6,
+            }}
+          >
             {isRTL ? 'العروض' : 'OFFERS'}
           </motion.h1>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontFamily: 'Cairo' }}>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontFamily: 'Cairo' }}
+          >
             {loading ? '...' : `${products.length} ${isRTL ? 'منتج' : 'products'}`}
           </motion.p>
         </div>
@@ -52,19 +73,31 @@ export default function OffersPage() {
         {loading ? (
           <div className="product-grid">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} style={{ background: 'var(--paper-soft)', borderRadius: 8, aspectRatio: '3/4' }} />
+              <div key={i} style={{
+                background: 'var(--paper-soft)',
+                borderRadius: 8,
+                aspectRatio: '3/4',
+              }} />
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 0', gap: 16 }}>
+          <div style={{
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', padding: '80px 0', gap: 16,
+          }}>
             <i className="fa-solid fa-tag" style={{ fontSize: 48, color: 'var(--border)' }} />
-            <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)', fontFamily: 'Cairo' }}>
+            <p style={{
+              fontWeight: 700, fontSize: 15,
+              color: 'var(--ink)', fontFamily: 'Cairo',
+            }}>
               {isRTL ? 'لا توجد عروض حالياً' : 'No offers available right now'}
             </p>
           </div>
         ) : (
           <div className="product-grid">
-            {products.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+            {products.map((p, i) => (
+              <ProductCard key={p.id} product={p} index={i} />
+            ))}
           </div>
         )}
       </section>

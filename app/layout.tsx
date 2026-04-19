@@ -4,7 +4,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
-  title: 'زيّ — Zayy',
+  title: 'زيّ — Zayy | أناقة كلاسيكية',
   description: 'أناقة كلاسيكية — Classic Elegance',
   manifest: '/manifest.json',
 };

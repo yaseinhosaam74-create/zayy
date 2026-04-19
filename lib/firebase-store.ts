@@ -58,6 +58,15 @@ export type BrandSettings = {
   heroSubEn: string;
   heroEyebrowAr: string;
   heroEyebrowEn: string;
+  quoteAr: string;
+  quoteEn: string;
+  aboutQuoteAr: string;
+  aboutQuoteEn: string;
+  statProducts: string;
+  statClients: string;
+  statCotton: string;
+  footerCopyrightAr: string;
+  footerCopyrightEn: string;
   email: string;
   phone: string;
   whatsapp: string;
