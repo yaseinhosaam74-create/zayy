@@ -7,7 +7,7 @@ export default function SplashScreen() {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(false), 2200);
+    const t = setTimeout(() => setVisible(false), 2400);
     return () => clearTimeout(t);
   }, []);
 
@@ -16,8 +16,8 @@ export default function SplashScreen() {
       {visible && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: 'easeInOut' }}
+          exit={{ opacity: 0, scale: 1.04 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
           style={{
             position: 'fixed',
             inset: 0,
@@ -27,17 +27,18 @@ export default function SplashScreen() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
+            gap: 0,
           }}
         >
           {/* Logo */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.75, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
+            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             style={{
               fontFamily: 'Cairo, sans-serif',
               fontWeight: 900,
-              fontSize: 76,
+              fontSize: 88,
               color: '#ffffff',
               lineHeight: 1,
               letterSpacing: '-0.02em',
@@ -48,17 +49,17 @@ export default function SplashScreen() {
 
           {/* Tagline */}
           <motion.p
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.35 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.5 }}
             style={{
               fontFamily: 'Cairo, sans-serif',
               fontWeight: 300,
-              fontSize: 12,
-              color: 'rgba(255,255,255,0.35)',
-              letterSpacing: '0.32em',
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.3)',
+              letterSpacing: '0.35em',
               textTransform: 'uppercase',
-              marginTop: 14,
+              marginTop: 12,
             }}
           >
             أناقة كلاسيكية
@@ -68,10 +69,10 @@ export default function SplashScreen() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
             style={{
-              marginTop: 32,
-              width: 56,
+              marginTop: 40,
+              width: 48,
               height: 2,
               background: 'rgba(255,255,255,0.08)',
               borderRadius: 2,
@@ -81,10 +82,10 @@ export default function SplashScreen() {
             <motion.div
               initial={{ width: '0%' }}
               animate={{ width: '100%' }}
-              transition={{ duration: 1.7, ease: 'easeInOut', delay: 0.2 }}
+              transition={{ duration: 1.8, ease: 'easeInOut', delay: 0.3 }}
               style={{
                 height: '100%',
-                background: 'rgba(255,255,255,0.55)',
+                background: 'rgba(255,255,255,0.6)',
                 borderRadius: 2,
               }}
             />

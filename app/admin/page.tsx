@@ -18,9 +18,10 @@ import { db, auth } from '@/firebase/config';
 // ══════════════════════════════════════════
 const ADMIN_EMAILS = [
   'yaseinhosaam74@gmail.com',
-  'yaseinhosaam.1@gmail.com'
+  // Add second email here if needed
+  // Add third email here if needed
 ];
-const MAX_SESSIONS = 2;
+const ADMIN_PASSWORD = 'yyy777yyy777'; // Change this to your password
 const CLOUDINARY_CLOUD_NAME = 'ddbjootzx';
 const CLOUDINARY_UPLOAD_PRESET = 'zayy_products';
 
@@ -90,39 +91,15 @@ export default function AdminPage() {
   };
 
   // ── SESSION SECURITY ──
-  const registerSession = async (uid: string) => {
-    try {
-      const sessRef = doc(db, 'adminSessions', uid);
-      const snap = await getDoc(sessRef);
-      const now = Date.now();
-      const sessions: Record<string, number> = snap.exists() ? snap.data() : {};
-      const active: Record<string, number> = {};
-      Object.entries(sessions).forEach(([id, ts]) => {
-        if (now - (ts as number) < 86400000) active[id] = ts as number;
-      });
-      if (Object.keys(active).length >= MAX_SESSIONS && !active[sessionId.current]) {
-        setSessionBlocked(true);
-        await signOut(auth);
-        return false;
-      }
-      active[sessionId.current] = now;
-      await setDoc(sessRef, active);
-      const interval = setInterval(async () => {
-        const s = await getDoc(sessRef);
-        const data = s.exists() ? { ...s.data() } : {};
-        data[sessionId.current] = Date.now();
-        await setDoc(sessRef, data);
-      }, 60000);
-      window.addEventListener('beforeunload', async () => {
-        clearInterval(interval);
-        const s = await getDoc(sessRef);
-        const data = s.exists() ? { ...s.data() } : {};
-        delete data[sessionId.current];
-        await setDoc(sessRef, data);
-      });
-      return true;
-    } catch { return true; }
-  };
+  const checkPassword = () => {
+  const pwd = prompt('أدخل كلمة المرور للدخول:');
+  if (pwd !== ADMIN_PASSWORD) {
+    alert('❌ كلمة المرور غير صحيحة');
+    signOut(auth);
+    return false;
+  }
+  return true;
+};
 
   // ── AUTH ──
   useEffect(() => {
