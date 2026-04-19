@@ -12,9 +12,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  turbopack: {
-    root: '/data/data/com.termux/files/home/my-store',
-  },
+  turbopack: {},
 };
 
 module.exports = nextConfig;
