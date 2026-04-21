@@ -38,7 +38,7 @@ export default function SplashScreen() {
             style={{
               fontFamily: 'Cairo, sans-serif',
               fontWeight: 900,
-              fontSize: 72,
+              fontSize: 64,
               color: '#ffffff',
               lineHeight: 1,
               letterSpacing: '-0.02em',
@@ -54,7 +54,7 @@ export default function SplashScreen() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.55 }}
             style={{
-              marginTop: 18,
+              marginTop: 20,
               fontFamily: 'Cairo, sans-serif',
               fontWeight: 300,
               fontSize: 11,
