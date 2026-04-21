@@ -11,6 +11,22 @@ import { motion } from 'framer-motion';
 import {
   getMenProducts,
   getBrandSettings,
+  ...
+} from '@/lib/firebase-store';
+
+// In useEffect:
+const [brand, setBrand] = useState<any>(null);
+
+useEffect(() => {
+  const load = async () => {
+    const [data, b] = await Promise.all([getMenProducts(), getBrandSettings()]);
+    setProducts(data);
+    setBrand(b);
+    setCategories(b.categoriesMen || ['t-shirt', 'pants', 'hoodie', 'jacket']);
+    setLoading(false);
+  };
+  load();
+}, []);
   getActiveDiscountedPrice,
   isLowStock,
   getCategoryLabel,

@@ -8,11 +8,18 @@ const nextConfig = {
       { protocol: 'https', hostname: 'storage.googleapis.com' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
     ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
+    deviceSizes: [360, 414, 768, 1024, 1280],
   },
   typescript: {
     ignoreBuildErrors: true,
   },
-  turbopack: {},
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  poweredByHeader: false,
+  compress: true,
 };
 
 module.exports = nextConfig;

@@ -61,22 +61,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body style={{ margin: 0, padding: 0 }}>
-        <AuthProvider>
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              duration: 2500,
-              style: {
-                fontFamily: 'Cairo, sans-serif',
-                fontWeight: 600,
-                fontSize: 13,
-              },
-            }}
-          />
-          {children}
-        </AuthProvider>
-      </body>
+      import BackButtonHandler from '@/components/BackButtonHandler';
+
+// Inside body:
+<body style={{ margin: 0, padding: 0 }}>
+  <AuthProvider>
+    <BackButtonHandler />
+    <Toaster ... />
+    {children}
+  </AuthProvider>
+</body>
     </html>
   );
 }

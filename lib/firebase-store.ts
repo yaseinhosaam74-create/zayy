@@ -73,6 +73,15 @@ export type BrandSettings = {
   instagramUrl: string;
   tiktokUrl: string;
   whatsappUrl: string;
+  menComingSoon: boolean;
+  womenComingSoon: boolean;
+  offersComingSoon: boolean;
+  menComingSoonMessageAr: string;
+  menComingSoonMessageEn: string;
+  womenComingSoonMessageAr: string;
+  womenComingSoonMessageEn: string;
+  offersComingSoonMessageAr: string;
+  offersComingSoonMessageEn: string;
   categoriesMen: string[];
   categoriesWomen: string[];
   // Privacy page
@@ -276,19 +285,46 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
 
 export function getActiveDiscountedPrice(product: Product): number | null {
   if (!product.offer?.active) return null;
+  if (!product.offer.discountedPrice || product.offer.discountedPrice <= 0) return null;
+
   const now = new Date();
-  const start = product.offer.startDate?.toDate?.() ?? new Date(0);
-  const end = product.offer.endDate?.toDate?.() ?? new Date(0);
-  if (now >= start && now <= end) return product.offer.discountedPrice;
-  return null;
-}
 
-export function isLowStock(product: Product): boolean {
-  return Object.values(product.stock ?? {}).some(qty => qty > 0 && qty < 5);
-}
+  // Handle both string dates and Firestore Timestamps
+  let start: Date;
+  let end: Date;
 
-export function isSizeAvailable(product: Product, size: string): boolean {
-  return (product.stock?.[size] ?? 0) > 0;
+  try {
+    const startRaw = product.offer.startDate;
+    const endRaw = product.offer.endDate;
+
+    if (!startRaw || !endRaw) return product.offer.discountedPrice;
+
+    // If it's a Firestore Timestamp object
+    if (typeof startRaw === 'object' && 'toDate' in (startRaw as any)) {
+      start = (startRaw as any).toDate();
+    } else {
+      start = new Date(startRaw as string);
+    }
+
+    if (typeof endRaw === 'object' && 'toDate' in (endRaw as any)) {
+      end = (endRaw as any).toDate();
+    } else {
+      end = new Date(endRaw as string);
+    }
+
+    // If dates are invalid, just return the discounted price
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return product.offer.discountedPrice;
+    }
+
+    if (now >= start && now <= end) {
+      return product.offer.discountedPrice;
+    }
+
+    return null;
+  } catch {
+    return product.offer.discountedPrice;
+  }
 }
 
 // ══════════════════════════════════════════

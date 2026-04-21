@@ -27,16 +27,18 @@ export default function SplashScreen() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
+            gap: 0,
           }}
         >
+          {/* Logo */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.75, y: 16 }}
+            initial={{ opacity: 0, scale: 0.75, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             style={{
               fontFamily: 'Cairo, sans-serif',
               fontWeight: 900,
-              fontSize: 88,
+              fontSize: 80,
               color: '#ffffff',
               lineHeight: 1,
               letterSpacing: '-0.02em',
@@ -45,10 +47,11 @@ export default function SplashScreen() {
             زيّ
           </motion.div>
 
+          {/* Tagline — separate and below with proper spacing */}
           <motion.p
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.5 }}
+            transition={{ duration: 0.4, delay: 0.55 }}
             style={{
               fontFamily: 'Cairo, sans-serif',
               fontWeight: 300,
@@ -56,18 +59,20 @@ export default function SplashScreen() {
               color: 'rgba(255,255,255,0.3)',
               letterSpacing: '0.35em',
               textTransform: 'uppercase',
-              marginTop: 14,
+              marginTop: 16,
+              marginBottom: 0,
             }}
           >
             أناقة كلاسيكية
           </motion.p>
 
+          {/* Progress bar */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
             style={{
-              marginTop: 44,
+              marginTop: 48,
               width: 48,
               height: 2,
               background: 'rgba(255,255,255,0.08)',

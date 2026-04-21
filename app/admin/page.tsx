@@ -21,7 +21,7 @@ const ADMIN_EMAILS = [
   // Add second email here if needed
   // Add third email here if needed
 ];
-const ADMIN_PASSWORD = 'yyy777yyy777'; // Change this to your password
+const ADMIN_PASSWORD = 'yyy777yyy777';
 const CLOUDINARY_CLOUD_NAME = 'ddbjootzx';
 const CLOUDINARY_UPLOAD_PRESET = 'zayy_products';
 
@@ -69,7 +69,6 @@ const emptyProduct: Omit<Product, 'id'> = {
 export default function AdminPage() {
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [sessionBlocked, setSessionBlocked] = useState(false);
   const [section, setSection] = useState<Section>('products');
   const [products, setProducts] = useState<Product[]>([]);
   const [editProduct, setEditProduct] = useState<Partial<Product> | null>(null);
@@ -83,35 +82,41 @@ export default function AdminPage() {
   const [filterGender, setFilterGender] = useState<'all' | 'men' | 'women'>('all');
   const [toast, setToast] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
-  const sessionId = useRef(`session_${Date.now()}_${Math.random().toString(36).slice(2)}`);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 3500);
   };
 
-  // ── SESSION SECURITY ──
-  const checkPassword = () => {
-  const pwd = prompt('أدخل كلمة المرور للدخول:');
-  if (pwd !== ADMIN_PASSWORD) {
-    alert('❌ كلمة المرور غير صحيحة');
-    signOut(auth);
-    return false;
-  }
-  return true;
-};
+  // ── PASSWORD CHECK ──
+  const checkPassword = (): boolean => {
+    const pwd = prompt('أدخل كلمة المرور للدخول:');
+    if (pwd !== ADMIN_PASSWORD) {
+      alert('❌ كلمة المرور غير صحيحة');
+      signOut(auth);
+      return false;
+    }
+    return true;
+  };
 
   // ── AUTH ──
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async u => {
       if (u && ADMIN_EMAILS.includes(u.email || '')) {
-        const ok = await registerSession(u.uid);
+        const ok = checkPassword();
         if (ok) {
           setUser(u);
           loadProducts();
           loadSettings();
+        } else {
+          await signOut(auth);
+          setUser(null);
         }
       } else {
+        if (u && !ADMIN_EMAILS.includes(u.email || '')) {
+          await signOut(auth);
+          showToast('❌ هذا الحساب غير مصرح له');
+        }
         setUser(null);
       }
       setAuthLoading(false);
@@ -131,17 +136,6 @@ export default function AdminPage() {
   };
 
   const logout = async () => {
-    if (user) {
-      try {
-        const sessRef = doc(db, 'adminSessions', user.uid);
-        const snap = await getDoc(sessRef);
-        if (snap.exists()) {
-          const data = { ...snap.data() };
-          delete data[sessionId.current];
-          await setDoc(sessRef, data);
-        }
-      } catch {}
-    }
     await signOut(auth);
     setUser(null);
   };
@@ -272,14 +266,18 @@ export default function AdminPage() {
 
   const toggleSize = (size: string) => {
     const current = editProduct?.sizes || [];
-    const updated = current.includes(size) ? current.filter(s => s !== size) : [...current, size];
+    const updated = current.includes(size)
+      ? current.filter(s => s !== size)
+      : [...current, size];
     const stock = { ...(editProduct?.stock || {}) };
     if (!stock[size]) stock[size] = 0;
     setEditProduct(prev => ({ ...prev, sizes: updated, stock }));
   };
 
   const currentSizes = editProduct?.gender === 'women' ? SIZES_WOMEN : SIZES_MEN;
-  const filteredProducts = products.filter(p => filterGender === 'all' ? true : p.gender === filterGender);
+  const filteredProducts = products.filter(p =>
+    filterGender === 'all' ? true : p.gender === filterGender
+  );
 
   // ── LOADING ──
   if (authLoading) return (
@@ -287,26 +285,6 @@ export default function AdminPage() {
       <div style={{ textAlign: 'center' }}>
         <p style={{ color: '#fff', fontFamily: 'Cairo', fontSize: 52, fontWeight: 900 }}>زيّ</p>
         <p style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Cairo', fontSize: 13, marginTop: 8 }}>جاري التحقق...</p>
-      </div>
-    </div>
-  );
-
-  // ── SESSION BLOCKED ──
-  if (sessionBlocked) return (
-    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-      <div style={{ textAlign: 'center', maxWidth: 360 }}>
-        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-          <i className="fa-solid fa-shield-halved" style={{ fontSize: 28, color: '#ef4444' }} />
-        </div>
-        <p style={{ color: '#fff', fontFamily: 'Cairo', fontSize: 20, fontWeight: 900, marginBottom: 12 }}>تم الوصول للحد الأقصى</p>
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Cairo', fontSize: 13, lineHeight: 1.8, marginBottom: 24 }}>
-          لوحة التحكم مفتوحة على {MAX_SESSIONS} أجهزة. أغلق أحد الأجهزة الأخرى ثم حاول مجدداً.
-        </p>
-        <button onClick={() => { setSessionBlocked(false); window.location.reload(); }}
-          style={{ background: '#fff', color: '#111', border: 'none', borderRadius: 10, padding: '12px 28px', fontFamily: 'Cairo', fontWeight: 700, cursor: 'pointer' }}>
-          إعادة المحاولة
-        </button>
       </div>
     </div>
   );
@@ -453,83 +431,27 @@ export default function AdminPage() {
 
         {/* ══ SETTINGS ══ */}
         {section === 'settings' && (
-          {/* Privacy Page */}
-<div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
-  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>
-    🔒 صفحة سياسة الخصوصية
-  </p>
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-    {[
-      { key: 'privacyTitleAr', label: 'عنوان الصفحة بالعربية' },
-      { key: 'privacyTitleEn', label: 'عنوان الصفحة بالإنجليزية' },
-    ].map(f => (
-      <div key={f.key}>
-        <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
-        <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
-          style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
-      </div>
-    ))}
-    {[1,2,3,4,5,6].map(n => (
-      <div key={n} style={{ background: '#111', borderRadius: 10, padding: 14 }}>
-        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 10, fontFamily: 'Cairo' }}>القسم {n}</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[
-            { key: `privacyS${n}TitleAr`, label: 'عنوان القسم بالعربية' },
-            { key: `privacyS${n}TitleEn`, label: 'عنوان القسم بالإنجليزية' },
-            { key: `privacyS${n}TextAr`, label: 'نص القسم بالعربية' },
-            { key: `privacyS${n}TextEn`, label: 'نص القسم بالإنجليزية' },
-          ].map(f => (
-            <div key={f.key}>
-              <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 4 }}>{f.label}</label>
-              <textarea value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
-                rows={2}
-                style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 12, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
-            </div>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 style={{ color: '#fff', fontSize: 18, fontWeight: 900, marginBottom: 4 }}>إعدادات الموقع الكاملة</h2>
 
-{/* Terms Page */}
-<div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
-  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>
-    📋 صفحة الشروط والأحكام
-  </p>
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-    {[
-      { key: 'termsTitleAr', label: 'عنوان الصفحة بالعربية' },
-      { key: 'termsTitleEn', label: 'عنوان الصفحة بالإنجليزية' },
-    ].map(f => (
-      <div key={f.key}>
-        <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
-        <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
-          style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
-      </div>
-    ))}
-    {[1,2,3,4,5,6].map(n => (
-      <div key={n} style={{ background: '#111', borderRadius: 10, padding: 14 }}>
-        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 10, fontFamily: 'Cairo' }}>القسم {n}</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[
-            { key: `termsS${n}TitleAr`, label: 'عنوان القسم بالعربية' },
-            { key: `termsS${n}TitleEn`, label: 'عنوان القسم بالإنجليزية' },
-            { key: `termsS${n}TextAr`, label: 'نص القسم بالعربية' },
-            { key: `termsS${n}TextEn`, label: 'نص القسم بالإنجليزية' },
-          ].map(f => (
-            <div key={f.key}>
-              <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 4 }}>{f.label}</label>
-              <textarea value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
-                rows={2}
-                style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 12, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
+            {/* Brand */}
+            <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>🏷️ هوية العلامة التجارية</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {[
+                  { key: 'name', label: 'اسم الموقع بالعربية' },
+                  { key: 'nameEn', label: 'اسم الموقع بالإنجليزية' },
+                  { key: 'taglineAr', label: 'الشعار بالعربية' },
+                  { key: 'taglineEn', label: 'الشعار بالإنجليزية' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
+                    <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
 
             {/* Hero */}
             <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
@@ -563,14 +485,13 @@ export default function AdminPage() {
                   <div key={f.key}>
                     <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
                     <textarea value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
-                      rows={2}
-                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
+                      rows={2} style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* About Page */}
+            {/* About */}
             <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
               <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>👤 صفحة من نحن</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -581,8 +502,7 @@ export default function AdminPage() {
                   <div key={f.key}>
                     <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
                     <textarea value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
-                      rows={f.rows}
-                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
+                      rows={f.rows} style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
                   </div>
                 ))}
               </div>
@@ -596,7 +516,7 @@ export default function AdminPage() {
                   <div key={f.key}>
                     <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 6 }}>{f.label}</label>
                     <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
-                      placeholder={f.placeholder}
+                      placeholder={(f as any).placeholder}
                       style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
                   </div>
                 ))}
@@ -656,39 +576,125 @@ export default function AdminPage() {
             </div>
 
             {/* Categories */}
+            {/* Coming Soon Controls */}
+<div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
+  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>🚧 تحكم في الأقسام</p>
+  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Cairo', marginBottom: 16 }}>
+    عند تفعيل "قريباً" سيُخفى القسم ويظهر رسالة مخصصة للزوار
+  </p>
+  {[
+    { key: 'menComingSoon', labelAr: 'قسم الرجال', labelEn: 'Men Section', msgArKey: 'menComingSoonMessageAr', msgEnKey: 'menComingSoonMessageEn' },
+    { key: 'womenComingSoon', labelAr: 'قسم النساء', labelEn: 'Women Section', msgArKey: 'womenComingSoonMessageAr', msgEnKey: 'womenComingSoonMessageEn' },
+    { key: 'offersComingSoon', labelAr: 'قسم العروض', labelEn: 'Offers Section', msgArKey: 'offersComingSoonMessageAr', msgEnKey: 'offersComingSoonMessageEn' },
+  ].map(f => (
+    <div key={f.key} style={{ background: '#111', borderRadius: 10, padding: 14, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span style={{ fontSize: 13, color: '#fff', fontFamily: 'Cairo', fontWeight: 700 }}>{f.labelAr}</span>
+        <button
+          onClick={() => setSettings({ ...settings, [f.key]: !settings[f.key] })}
+          style={{
+            padding: '6px 16px', borderRadius: 8, border: 'none',
+            background: settings[f.key] ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)',
+            color: settings[f.key] ? '#ef4444' : '#22c55e',
+            cursor: 'pointer', fontSize: 12, fontFamily: 'Cairo', fontWeight: 700,
+          }}
+        >
+          {settings[f.key] ? '🔒 مغلق — قريباً' : '✓ مفتوح'}
+        </button>
+      </div>
+      {settings[f.key] && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div>
+            <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 4 }}>رسالة بالعربية</label>
+            <input value={settings[f.msgArKey] || ''} onChange={e => setSettings({ ...settings, [f.msgArKey]: e.target.value })}
+              placeholder="قريباً..."
+              style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 7, padding: '7px 10px', color: '#fff', fontSize: 12, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
+          </div>
+          <div>
+            <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 4 }}>رسالة بالإنجليزية</label>
+            <input value={settings[f.msgEnKey] || ''} onChange={e => setSettings({ ...settings, [f.msgEnKey]: e.target.value })}
+              placeholder="Coming Soon..."
+              style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 7, padding: '7px 10px', color: '#fff', fontSize: 12, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
+          </div>
+        </div>
+      )}
+    </div>
+  ))}
+</div>
+
+            {/* Privacy Page */}
             <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>🗂️ تصنيفات المنتجات</p>
-              {[
-                { key: 'categoriesMen', label: 'تصنيفات قسم الرجال' },
-                { key: 'categoriesWomen', label: 'تصنيفات قسم النساء' },
-              ].map(f => (
-                <div key={f.key} style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 10 }}>{f.label}</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-                    {(settings[f.key] || []).map((cat: string, idx: number) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#252525', border: '1px solid #333', borderRadius: 8, padding: '6px 10px' }}>
-                        <span style={{ fontSize: 12, color: '#fff' }}>{cat}</span>
-                        <button onClick={() => { const u = [...(settings[f.key] || [])]; u.splice(idx, 1); setSettings({ ...settings, [f.key]: u }); }}
-                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0, fontSize: 11 }}>
-                          <i className="fa-solid fa-xmark" />
-                        </button>
-                      </div>
-                    ))}
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>🔒 صفحة سياسة الخصوصية</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[
+                  { key: 'privacyTitleAr', label: 'عنوان الصفحة بالعربية' },
+                  { key: 'privacyTitleEn', label: 'عنوان الصفحة بالإنجليزية' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
+                    <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <select id={`sel-${f.key}`}
-                      style={{ flex: 1, background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: 12, fontFamily: 'Cairo' }}>
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <button onClick={() => { const el = document.getElementById(`sel-${f.key}`) as HTMLSelectElement; const val = el?.value; if (val && !(settings[f.key] || []).includes(val)) setSettings({ ...settings, [f.key]: [...(settings[f.key] || []), val] }); }}
-                      style={{ background: '#fff', color: '#111', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 12, fontFamily: 'Cairo', fontWeight: 700 }}>
-                      إضافة
-                    </button>
+                ))}
+                {[1, 2, 3, 4, 5, 6].map(n => (
+                  <div key={n} style={{ background: '#111', borderRadius: 10, padding: 14 }}>
+                    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 10, fontFamily: 'Cairo' }}>القسم {n}</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {[
+                        { key: `privacyS${n}TitleAr`, label: 'عنوان القسم بالعربية' },
+                        { key: `privacyS${n}TitleEn`, label: 'عنوان القسم بالإنجليزية' },
+                        { key: `privacyS${n}TextAr`, label: 'نص القسم بالعربية' },
+                        { key: `privacyS${n}TextEn`, label: 'نص القسم بالإنجليزية' },
+                      ].map(f => (
+                        <div key={f.key}>
+                          <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 4 }}>{f.label}</label>
+                          <textarea value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+                            rows={2} style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 12, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
+            {/* Terms Page */}
+            <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: 20 }}>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>📋 صفحة الشروط والأحكام</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[
+                  { key: 'termsTitleAr', label: 'عنوان الصفحة بالعربية' },
+                  { key: 'termsTitleEn', label: 'عنوان الصفحة بالإنجليزية' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 6 }}>{f.label}</label>
+                    <input value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+                      style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: 'Cairo', boxSizing: 'border-box' }} />
+                  </div>
+                ))}
+                {[1, 2, 3, 4, 5, 6].map(n => (
+                  <div key={n} style={{ background: '#111', borderRadius: 10, padding: 14 }}>
+                    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 10, fontFamily: 'Cairo' }}>القسم {n}</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {[
+                        { key: `termsS${n}TitleAr`, label: 'عنوان القسم بالعربية' },
+                        { key: `termsS${n}TitleEn`, label: 'عنوان القسم بالإنجليزية' },
+                        { key: `termsS${n}TextAr`, label: 'نص القسم بالعربية' },
+                        { key: `termsS${n}TextEn`, label: 'نص القسم بالإنجليزية' },
+                      ].map(f => (
+                        <div key={f.key}>
+                          <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: 4 }}>{f.label}</label>
+                          <textarea value={settings[f.key] || ''} onChange={e => setSettings({ ...settings, [f.key]: e.target.value })}
+                            rows={2} style={{ width: '100%', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 12, fontFamily: 'Cairo', resize: 'vertical', boxSizing: 'border-box' }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Save Button */}
             <button onClick={saveSettings} disabled={savingSettings}
               style={{ background: savingSettings ? '#333' : '#fff', color: savingSettings ? 'rgba(255,255,255,0.4)' : '#111', border: 'none', borderRadius: 12, padding: '14px 0', width: '100%', fontFamily: 'Cairo', fontWeight: 900, fontSize: 15, cursor: savingSettings ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <i className="fa-solid fa-floppy-disk" />
@@ -924,6 +930,7 @@ export default function AdminPage() {
                   <i className="fa-solid fa-floppy-disk" />
                   {saving ? 'جاري الحفظ...' : uploading ? 'انتظر اكتمال الرفع...' : isNewProduct ? 'إضافة المنتج' : 'حفظ التعديلات'}
                 </button>
+
               </div>
             </motion.div>
           </motion.div>
