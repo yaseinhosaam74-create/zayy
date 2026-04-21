@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
+import BackButtonHandler from '@/components/BackButtonHandler';
 
 export const metadata: Metadata = {
   title: 'زيّ — Zayy',
@@ -61,16 +62,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      import BackButtonHandler from '@/components/BackButtonHandler';
-
-// Inside body:
-<body style={{ margin: 0, padding: 0 }}>
-  <AuthProvider>
-    <BackButtonHandler />
-    <Toaster ... />
-    {children}
-  </AuthProvider>
-</body>
+      <body style={{ margin: 0, padding: 0 }}>
+        <AuthProvider>
+          <BackButtonHandler />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 2500,
+              style: {
+                fontFamily: 'Cairo, sans-serif',
+                fontWeight: 600,
+                fontSize: 13,
+              },
+            }}
+          />
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
