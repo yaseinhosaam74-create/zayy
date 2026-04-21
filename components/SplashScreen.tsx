@@ -30,7 +30,7 @@ export default function SplashScreen() {
             gap: 0,
           }}
         >
-          {/* Logo */}
+          {/* Logo — fixed size so it never overlaps tagline */}
           <motion.div
             initial={{ opacity: 0, scale: 0.75, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -38,33 +38,33 @@ export default function SplashScreen() {
             style={{
               fontFamily: 'Cairo, sans-serif',
               fontWeight: 900,
-              fontSize: 80,
+              fontSize: 72,
               color: '#ffffff',
               lineHeight: 1,
               letterSpacing: '-0.02em',
+              display: 'block',
             }}
           >
             زيّ
           </motion.div>
 
-          {/* Tagline — separate and below with proper spacing */}
-          <motion.p
+          {/* Tagline — always below logo with fixed gap */}
+          <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.55 }}
             style={{
+              marginTop: 18,
               fontFamily: 'Cairo, sans-serif',
               fontWeight: 300,
               fontSize: 11,
               color: 'rgba(255,255,255,0.3)',
               letterSpacing: '0.35em',
               textTransform: 'uppercase',
-              marginTop: 16,
-              marginBottom: 0,
             }}
           >
             أناقة كلاسيكية
-          </motion.p>
+          </motion.div>
 
           {/* Progress bar */}
           <motion.div
@@ -72,7 +72,7 @@ export default function SplashScreen() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
             style={{
-              marginTop: 48,
+              marginTop: 52,
               width: 48,
               height: 2,
               background: 'rgba(255,255,255,0.08)',
