@@ -3,6 +3,7 @@ import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import BackButtonHandler from '@/components/BackButtonHandler';
+import MaintenanceCheck from '@/components/MaintenanceCheck';
 
 export const metadata: Metadata = {
   title: 'زيّ — Zayy',
@@ -23,57 +24,46 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/manifest.json" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var stored = JSON.parse(localStorage.getItem('my-store-data') || '{}');
-                  var state = stored?.state || {};
-                  var theme = state.theme;
-                  var lang = state.language;
-                  if (!lang) {
-                    var phoneLang = navigator.language || navigator.languages?.[0] || 'ar';
-                    lang = phoneLang.startsWith('ar') ? 'ar' : 'en';
-                    if (!stored.state) stored.state = {};
-                    stored.state.language = lang;
-                    localStorage.setItem('my-store-data', JSON.stringify(stored));
-                  }
-                  if (theme === 'dark') document.documentElement.classList.add('dark');
-                  if (lang === 'en') {
-                    document.documentElement.setAttribute('dir', 'ltr');
-                    document.documentElement.setAttribute('lang', 'en');
-                  }
-                } catch(e) {}
-                document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-                document.addEventListener('keydown', function(e) {
-                  if (e.ctrlKey && ['u','s','a'].includes(e.key.toLowerCase())) e.preventDefault();
-                });
-              })();
-            `
-          }}
-        />
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                var stored = JSON.parse(localStorage.getItem('zayy-data') || localStorage.getItem('my-store-data') || '{}');
+                var state = stored?.state || {};
+                var theme = state.theme;
+                var lang = state.language;
+                if (!lang) {
+                  var phoneLang = navigator.language || navigator.languages?.[0] || 'ar';
+                  lang = phoneLang.startsWith('ar') ? 'ar' : 'en';
+                  if (!stored.state) stored.state = {};
+                  stored.state.language = lang;
+                  localStorage.setItem('zayy-data', JSON.stringify(stored));
+                }
+                if (theme === 'dark') document.documentElement.classList.add('dark');
+                if (lang === 'en') {
+                  document.documentElement.setAttribute('dir', 'ltr');
+                  document.documentElement.setAttribute('lang', 'en');
+                }
+              } catch(e) {}
+              document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+              document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && ['u','s','a'].includes(e.key.toLowerCase())) e.preventDefault();
+              });
+            })();
+          `
+        }} />
       </head>
       <body style={{ margin: 0, padding: 0 }}>
         <AuthProvider>
           <BackButtonHandler />
+          <MaintenanceCheck />
           <Toaster
             position="top-center"
             toastOptions={{
               duration: 2500,
-              style: {
-                fontFamily: 'Cairo, sans-serif',
-                fontWeight: 600,
-                fontSize: 13,
-              },
+              style: { fontFamily: 'Cairo, sans-serif', fontWeight: 600, fontSize: 13 },
             }}
           />
           {children}
