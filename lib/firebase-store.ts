@@ -1,4 +1,4 @@
-import {
+ import {
   collection,
   doc,
   getDoc,
@@ -14,6 +14,13 @@ import { db } from '@/firebase/config';
 // TYPES
 // ══════════════════════════════════════════
 
+export type ProductColor = {
+  name: string;
+  nameAr: string;
+  hex: string;
+  images: string[];
+};
+
 export type Product = {
   id: string;
   nameAr: string;
@@ -24,6 +31,7 @@ export type Product = {
   gender: 'men' | 'women';
   price: number;
   images: string[];
+  colors?: ProductColor[];
   sizes: string[];
   stock: Record<string, number>;
   active: boolean;
@@ -32,17 +40,11 @@ export type Product = {
     active: boolean;
     discountedPrice: number;
     label: string;
-    startDate: Timestamp;
-    endDate: Timestamp;
+    startDate: any;
+    endDate: any;
   };
   createdAt?: Timestamp;
-};
-
-export type Category = {
-  id: string;
-  nameAr: string;
-  nameEn: string;
-  icon: string;
+  [key: string]: any;
 };
 
 export type BrandSettings = {
@@ -73,6 +75,8 @@ export type BrandSettings = {
   instagramUrl: string;
   tiktokUrl: string;
   whatsappUrl: string;
+  categoriesMen: string[];
+  categoriesWomen: string[];
   menComingSoon: boolean;
   womenComingSoon: boolean;
   offersComingSoon: boolean;
@@ -82,62 +86,10 @@ export type BrandSettings = {
   womenComingSoonMessageEn: string;
   offersComingSoonMessageAr: string;
   offersComingSoonMessageEn: string;
-  categoriesMen: string[];
-  categoriesWomen: string[];
-  // Privacy page
   privacyTitleAr: string;
   privacyTitleEn: string;
-  privacyS1TitleAr: string;
-  privacyS1TitleEn: string;
-  privacyS1TextAr: string;
-  privacyS1TextEn: string;
-  privacyS2TitleAr: string;
-  privacyS2TitleEn: string;
-  privacyS2TextAr: string;
-  privacyS2TextEn: string;
-  privacyS3TitleAr: string;
-  privacyS3TitleEn: string;
-  privacyS3TextAr: string;
-  privacyS3TextEn: string;
-  privacyS4TitleAr: string;
-  privacyS4TitleEn: string;
-  privacyS4TextAr: string;
-  privacyS4TextEn: string;
-  privacyS5TitleAr: string;
-  privacyS5TitleEn: string;
-  privacyS5TextAr: string;
-  privacyS5TextEn: string;
-  privacyS6TitleAr: string;
-  privacyS6TitleEn: string;
-  privacyS6TextAr: string;
-  privacyS6TextEn: string;
-  // Terms page
   termsTitleAr: string;
   termsTitleEn: string;
-  termsS1TitleAr: string;
-  termsS1TitleEn: string;
-  termsS1TextAr: string;
-  termsS1TextEn: string;
-  termsS2TitleAr: string;
-  termsS2TitleEn: string;
-  termsS2TextAr: string;
-  termsS2TextEn: string;
-  termsS3TitleAr: string;
-  termsS3TitleEn: string;
-  termsS3TextAr: string;
-  termsS3TextEn: string;
-  termsS4TitleAr: string;
-  termsS4TitleEn: string;
-  termsS4TextAr: string;
-  termsS4TextEn: string;
-  termsS5TitleAr: string;
-  termsS5TitleEn: string;
-  termsS5TextAr: string;
-  termsS5TextEn: string;
-  termsS6TitleAr: string;
-  termsS6TitleEn: string;
-  termsS6TextAr: string;
-  termsS6TextEn: string;
   [key: string]: any;
 };
 
@@ -149,33 +101,33 @@ export async function getBrandSettings(): Promise<BrandSettings> {
   try {
     const ref = doc(db, 'setting', 'brand');
     const snap = await getDoc(ref);
-    if (snap.exists()) {
-      return snap.data() as BrandSettings;
-    }
+    if (snap.exists()) return snap.data() as BrandSettings;
   } catch (error) {
     console.error('Error fetching brand settings:', error);
   }
   return {
-    name: 'زيّ',
-    nameEn: 'Zayy',
-    taglineAr: 'أناقة كلاسيكية',
-    taglineEn: 'Classic Elegance',
-    aboutAr: 'بين نقاء الخطوط وهدوء التصميم، ينبثق زيّ.',
-    aboutEn: 'At the intersection of heritage and minimalism, Zayy emerges.',
-    heroTitleAr: 'تجمّع الأناقة',
-    heroTitleEn: 'WEAR BOLD',
-    heroSubAr: 'الأناقة هي ما يتبقى عندما تتخلى عن كل ما هو زائد.',
-    heroSubEn: 'Elegance is what remains when you remove the unnecessary.',
-    heroEyebrowAr: 'الموسم الجديد وصل',
-    heroEyebrowEn: 'New Season Has Arrived',
+    name: 'زيّ', nameEn: 'Zayy',
+    taglineAr: 'أناقة كلاسيكية', taglineEn: 'Classic Elegance',
+    aboutAr: '', aboutEn: '',
+    heroTitleAr: 'تجمّع الأناقة', heroTitleEn: 'WEAR BOLD',
+    heroSubAr: '', heroSubEn: '',
+    heroEyebrowAr: 'الموسم الجديد وصل', heroEyebrowEn: 'New Season Has Arrived',
+    quoteAr: '', quoteEn: '',
+    aboutQuoteAr: '', aboutQuoteEn: '',
+    statProducts: '+500', statClients: '+2K', statCotton: '100%',
+    footerCopyrightAr: 'جميع الحقوق محفوظة',
+    footerCopyrightEn: 'All rights reserved',
     email: 'zayyclothes.wear@gmail.com',
-    phone: '+201121454510',
-    whatsapp: '+201121454510',
-    instagramUrl: 'https://www.instagram.com/_zayyclothes',
-    tiktokUrl: 'https://www.tiktok.com',
-    whatsappUrl: 'https://wa.me/201121454510',
+    phone: '+201121454510', whatsapp: '+201121454510',
+    instagramUrl: '', tiktokUrl: '', whatsappUrl: '',
     categoriesMen: ['t-shirt', 'pants', 'hoodie', 'jacket'],
     categoriesWomen: ['t-shirt', 'pants', 'hoodie', 'jacket'],
+    menComingSoon: false, womenComingSoon: false, offersComingSoon: false,
+    menComingSoonMessageAr: 'قريباً', menComingSoonMessageEn: 'Coming Soon',
+    womenComingSoonMessageAr: 'قريباً', womenComingSoonMessageEn: 'Coming Soon',
+    offersComingSoonMessageAr: 'قريباً', offersComingSoonMessageEn: 'Coming Soon',
+    privacyTitleAr: 'سياسة الخصوصية', privacyTitleEn: 'Privacy Policy',
+    termsTitleAr: 'الشروط والأحكام', termsTitleEn: 'Terms & Conditions',
   };
 }
 
@@ -190,7 +142,7 @@ export async function getAllProducts(): Promise<Product[]> {
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() } as Product));
   } catch (error) {
-    console.error('Error fetching all products:', error);
+    console.error('Error fetching products:', error);
     return [];
   }
 }
@@ -198,12 +150,7 @@ export async function getAllProducts(): Promise<Product[]> {
 export async function getMenProducts(): Promise<Product[]> {
   try {
     const ref = collection(db, 'products');
-    const q = query(
-      ref,
-      where('active', '==', true),
-      where('gender', '==', 'men'),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(ref, where('active', '==', true), where('gender', '==', 'men'), orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() } as Product));
   } catch (error) {
@@ -215,12 +162,7 @@ export async function getMenProducts(): Promise<Product[]> {
 export async function getWomenProducts(): Promise<Product[]> {
   try {
     const ref = collection(db, 'products');
-    const q = query(
-      ref,
-      where('active', '==', true),
-      where('gender', '==', 'women'),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(ref, where('active', '==', true), where('gender', '==', 'women'), orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() } as Product));
   } catch (error) {
@@ -244,12 +186,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 export async function getFeaturedProducts(): Promise<Product[]> {
   try {
     const ref = collection(db, 'products');
-    const q = query(
-      ref,
-      where('active', '==', true),
-      where('featured', '==', true),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(ref, where('active', '==', true), where('featured', '==', true), orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() } as Product));
   } catch (error) {
@@ -261,13 +198,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 export async function getRelatedProducts(product: Product): Promise<Product[]> {
   try {
     const ref = collection(db, 'products');
-    const q = query(
-      ref,
-      where('active', '==', true),
-      where('gender', '==', product.gender),
-      where('category', '==', product.category),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(ref, where('active', '==', true), where('gender', '==', product.gender), where('category', '==', product.category), orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
     return snap.docs
       .map(d => ({ id: d.id, ...d.data() } as Product))
@@ -288,47 +219,64 @@ export function getActiveDiscountedPrice(product: Product): number | null {
   if (!product.offer.discountedPrice || product.offer.discountedPrice <= 0) return null;
 
   const now = new Date();
-
-  // Handle both string dates and Firestore Timestamps
-  let start: Date;
-  let end: Date;
-
   try {
     const startRaw = product.offer.startDate;
     const endRaw = product.offer.endDate;
 
     if (!startRaw || !endRaw) return product.offer.discountedPrice;
 
-    // If it's a Firestore Timestamp object
-    if (typeof startRaw === 'object' && 'toDate' in (startRaw as any)) {
-      start = (startRaw as any).toDate();
+    let start: Date;
+    let end: Date;
+
+    if (typeof startRaw === 'object' && startRaw !== null && 'toDate' in startRaw) {
+      start = startRaw.toDate();
     } else {
-      start = new Date(startRaw as string);
+      start = new Date(startRaw);
     }
 
-    if (typeof endRaw === 'object' && 'toDate' in (endRaw as any)) {
-      end = (endRaw as any).toDate();
+    if (typeof endRaw === 'object' && endRaw !== null && 'toDate' in endRaw) {
+      end = endRaw.toDate();
     } else {
-      end = new Date(endRaw as string);
+      end = new Date(endRaw);
     }
 
-    // If dates are invalid, just return the discounted price
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return product.offer.discountedPrice;
     }
 
-    if (now >= start && now <= end) {
-      return product.offer.discountedPrice;
-    }
-
+    if (now >= start && now <= end) return product.offer.discountedPrice;
     return null;
   } catch {
     return product.offer.discountedPrice;
   }
 }
 
+export function isLowStock(product: Product): boolean {
+  if (!product.stock) return false;
+  const values = Object.values(product.stock);
+  if (values.length === 0) return false;
+  const total = values.reduce((a: number, b: number) => a + b, 0);
+  return total > 0 && total < 10;
+}
+
+export function getLowStockCount(product: Product): number {
+  if (!product.stock) return 0;
+  const total = Object.values(product.stock).reduce((a: number, b: number) => a + b, 0);
+  if (total > 0 && total < 10) return total;
+  return 0;
+}
+
+export function isSizeAvailable(product: Product, size: string): boolean {
+  return (product.stock?.[size] ?? 0) > 0;
+}
+
+export function getTotalStock(product: Product): number {
+  if (!product.stock) return 0;
+  return Object.values(product.stock).reduce((a: number, b: number) => a + b, 0);
+}
+
 // ══════════════════════════════════════════
-// CATEGORY LABEL HELPERS
+// CATEGORY HELPERS
 // ══════════════════════════════════════════
 
 export const defaultCategoryLabels: Record<string, { ar: string; en: string; icon: string }> = {
