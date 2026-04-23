@@ -68,6 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
           {children}
         </AuthProvider>
+        import WhatsAppButton from '@/components/WhatsAppButton';
+
+// Inside body after Toaster:
+<WhatsAppButton />
       </body>
     </html>
   );

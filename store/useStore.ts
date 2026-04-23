@@ -1,134 +1,124 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Product } from '@/lib/getProducts';
-
-// ── Types ──────────────────────────────────────────────
 
 export type CartItem = {
-  product: Product;
+  product: any;
   size: string;
   quantity: number;
+  color?: string;
+};
+
+type CoinRule = {
+  id: string;
+  conditionAr: string;
+  conditionEn: string;
+  coins: number;
+  minOrderValue: number;
 };
 
 type Store = {
-  // Cart
   cart: CartItem[];
-  addToCart: (product: Product, size: string) => void;
+  addToCart: (product: any, size: string, color?: string) => void;
   removeFromCart: (productId: string, size: string) => void;
   updateQuantity: (productId: string, size: string, quantity: number) => void;
   clearCart: () => void;
 
-  // Wishlist
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
   isInWishlist: (productId: string) => boolean;
 
-  // Language
   language: 'en' | 'ar';
+  setLanguage: (lang: 'en' | 'ar') => void;
   toggleLanguage: () => void;
 
-  // Theme
   theme: 'light' | 'dark';
   toggleTheme: () => void;
 };
 
-// ── Store ──────────────────────────────────────────────
-
 export const useStore = create<Store>()(
   persist(
     (set, get) => ({
-
-      // ── Cart ────────────────────────────────────────
-
       cart: [],
 
-      addToCart: (product, size) => {
+      addToCart: (product, size, color) => {
         const existing = get().cart.find(
-          (item) =>
-            item.product.id === product.id && item.size === size
+          item => item.product.id === product.id && item.size === size && item.color === color
         );
         if (existing) {
-          set({
-            cart: get().cart.map((item) =>
-              item.product.id === product.id && item.size === size
+          set(state => ({
+            cart: state.cart.map(item =>
+              item.product.id === product.id && item.size === size && item.color === color
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
             ),
-          });
+          }));
         } else {
-          set({ cart: [...get().cart, { product, size, quantity: 1 }] });
+          set(state => ({ cart: [...state.cart, { product, size, quantity: 1, color }] }));
         }
       },
 
       removeFromCart: (productId, size) => {
-        set({
-          cart: get().cart.filter(
-            (item) =>
-              !(item.product.id === productId && item.size === size)
-          ),
-        });
+        set(state => ({
+          cart: state.cart.filter(item => !(item.product.id === productId && item.size === size)),
+        }));
       },
 
       updateQuantity: (productId, size, quantity) => {
-        if (quantity < 1) {
+        if (quantity <= 0) {
           get().removeFromCart(productId, size);
           return;
         }
-        set({
-          cart: get().cart.map((item) =>
+        set(state => ({
+          cart: state.cart.map(item =>
             item.product.id === productId && item.size === size
               ? { ...item, quantity }
               : item
           ),
-        });
+        }));
       },
 
       clearCart: () => set({ cart: [] }),
 
-      // ── Wishlist ─────────────────────────────────────
-
       wishlist: [],
-
       toggleWishlist: (productId) => {
-        const exists = get().wishlist.includes(productId);
-        set({
-          wishlist: exists
-            ? get().wishlist.filter((id) => id !== productId)
-            : [...get().wishlist, productId],
-        });
+        set(state => ({
+          wishlist: state.wishlist.includes(productId)
+            ? state.wishlist.filter(id => id !== productId)
+            : [...state.wishlist, productId],
+        }));
       },
-
-      isInWishlist: (productId) => {
-        return get().wishlist.includes(productId);
-      },
-
-      // ── Language ─────────────────────────────────────
+      isInWishlist: (productId) => get().wishlist.includes(productId),
 
       language: 'ar',
-
+      setLanguage: (lang) => {
+        set({ language: lang });
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+          document.documentElement.setAttribute('lang', lang);
+        }
+      },
       toggleLanguage: () => {
         const next = get().language === 'ar' ? 'en' : 'ar';
-        document.documentElement.setAttribute(
-          'dir',
-          next === 'ar' ? 'rtl' : 'ltr'
-        );
-        document.documentElement.setAttribute('lang', next);
-        set({ language: next });
+        get().setLanguage(next);
       },
-
-      // ── Theme ────────────────────────────────────────
 
       theme: 'light',
-
       toggleTheme: () => {
         const next = get().theme === 'light' ? 'dark' : 'light';
-        document.documentElement.classList.toggle('dark', next === 'dark');
         set({ theme: next });
+        if (typeof document !== 'undefined') {
+          document.documentElement.classList.toggle('dark', next === 'dark');
+        }
       },
-
     }),
     {
-      name: 'my-store-data',
+      name: 'zayy-data',
+      partialize: (state) => ({
+        cart: state.cart,
+        wishlist: state.wishlist,
+        language: state.language,
+        theme: state.theme,
+      }),
     }
   )
 );
