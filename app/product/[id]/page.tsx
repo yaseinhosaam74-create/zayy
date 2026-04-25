@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Drawer from '@/components/Drawer';
-import subscribeToRestock from '@/lib/firebase-store';
 import Footer from '@/components/Footer';
 import FitAdvisor from '@/components/FitAdvisor';
 import ShopTheLook from '@/components/ShopTheLook';
@@ -383,7 +382,6 @@ export default function ProductPage() {
               {/* FitAdvisor */}
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
                 <FitAdvisor sizes={product.sizes || []} />
-                <OutOfStockNotify product={product} isRTL={isRTL} />
               </motion.div>
 
               {/* ShopTheLook */}
@@ -529,90 +527,6 @@ function RelatedCard({ product, index, isRTL }: { product: Product; index: numbe
           )}
         </div>
       </div>
-    </motion.div>
-  );
-}
-function OutOfStockNotify({ product, isRTL }: { product: Product; isRTL: boolean }) {
-  const [email, setEmail] = useState('');
-  const [size, setSize] = useState(product.sizes?.[0] || '');
-  const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
-
-  const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0);
-  if (totalStock > 0) return null;
-
-  const handleSubmit = async () => {
-    if (!email || !email.includes('@')) {
-      toast.error(isRTL ? 'أدخل بريد إلكتروني صحيح' : 'Enter a valid email');
-      return;
-    }
-    setSending(true);
-    try {
-      await subscribeToRestock(email, product.id, product.nameAr, product.nameEn, size);
-      setSent(true);
-      toast.success(isRTL ? 'سنخبرك فور عودة المنتج!' : "We'll notify you when it's back!");
-    } catch {
-      toast.error(isRTL ? 'حدث خطأ' : 'Error occurred');
-    }
-    setSending(false);
-  };
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-      style={{ background: 'rgba(239,68,68,0.06)', border: '1.5px solid rgba(239,68,68,0.2)', borderRadius: 14, padding: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <i className="fa-solid fa-box-open" style={{ fontSize: 18, color: '#ef4444' }} />
-        </div>
-        <div>
-          <p style={{ fontFamily: 'Cairo', fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>
-            {isRTL ? 'نفد المخزون مؤقتاً' : 'Currently Out of Stock'}
-          </p>
-          <p style={{ fontFamily: 'Cairo', fontSize: 12, color: 'var(--mid)' }}>
-            {isRTL ? 'أدخل بريدك وسنخبرك فور عودته' : 'Enter your email and we\'ll notify you'}
-          </p>
-        </div>
-      </div>
-
-      {!sent ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {product.sizes && product.sizes.length > 0 && (
-            <div>
-              <label style={{ fontSize: 11, color: 'var(--mid)', fontFamily: 'Cairo', display: 'block', marginBottom: 6 }}>
-                {isRTL ? 'المقاس المطلوب' : 'Desired Size'}
-              </label>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {product.sizes.map(s => (
-                  <button key={s} onClick={() => setSize(s)}
-                    style={{ padding: '6px 14px', borderRadius: 7, border: `1.5px solid ${size === s ? 'var(--ink)' : 'var(--border)'}`, background: size === s ? 'var(--ink)' : 'transparent', color: size === s ? 'var(--paper)' : 'var(--mid)', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'Cairo' }}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-              placeholder={isRTL ? 'بريدك الإلكتروني' : 'your@email.com'}
-              style={{ flex: 1, padding: '11px 14px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--paper)', color: 'var(--ink)', fontSize: 13, fontFamily: 'Cairo', outline: 'none', boxSizing: 'border-box' }} />
-            <motion.button whileTap={{ scale: 0.94 }} onClick={handleSubmit} disabled={sending}
-              style={{ padding: '0 16px', borderRadius: 10, border: 'none', background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'Cairo', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-              {sending ? <i className="fa-solid fa-spinner fa-spin" /> : <i className="fa-solid fa-bell" />}
-              {isRTL ? 'أبلغني' : 'Notify Me'}
-            </motion.button>
-          </div>
-        </div>
-      ) : (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-          style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, padding: '12px 14px' }}>
-          <i className="fa-solid fa-circle-check" style={{ fontSize: 18, color: '#22c55e', flexShrink: 0 }} />
-          <p style={{ fontFamily: 'Cairo', fontSize: 13, color: 'var(--ink)', lineHeight: 1.6 }}>
-            {isRTL
-              ? `✅ تم تسجيل ${email}. سنرسل لك إشعاراً فور عودة المنتج!`
-              : `✅ ${email} registered. We'll email you when it's back!`}
-          </p>
-        </motion.div>
-      )}
     </motion.div>
   );
 }
